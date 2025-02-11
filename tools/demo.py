@@ -196,7 +196,7 @@ def save_scores(outputs):
 
 def save_questdb(classes, scores):
     # questdb
-    conf = f'http::addr=127.0.0.1:9000;'
+    conf = f'http::addr=host.docker.internal:9000;'
     global sender
     with Sender.from_conf(conf) as sender:
      for i in range(len(classes)):
