@@ -6,6 +6,7 @@ import argparse
 import os
 import time
 from loguru import logger
+from questdb.ingress import Sender, TimestampNanos
 
 import cv2
 
@@ -183,6 +184,33 @@ class Predictor(object):
         vis_res = vis(img, bboxes, scores, cls, cls_conf, self.cls_names)
         return vis_res
 
+def save_scores(outputs):
+    outputs = outputs[0].cpu()
+    scores = outputs[:,4] * outputs[:,5]
+
+    for i in range(len(outputs[:,6])):
+      logger.info(COCO_CLASSES[int(outputs[i,6])])
+      logger.info(scores[i])
+
+    save_questdb(outputs[:,6], scores)
+
+def save_questdb(classes, scores):
+    # questdb
+    conf = f'http::addr=127.0.0.1:9000;'
+    global sender
+    with Sender.from_conf(conf) as sender:
+     for i in range(len(classes)):
+            print("Saving: ")
+            print("class")
+            # Save to DB
+            sender.row(
+                    "detections",
+                    symbols={'class': COCO_CLASSES[int(classes[i])]},
+                    columns={'score': int(scores[i])},
+                    at= TimestampNanos.now()
+                    )
+
+            sender.flush()  
 
 def image_demo(predictor, vis_folder, path, current_time, save_result):
     if os.path.isdir(path):
@@ -192,6 +220,7 @@ def image_demo(predictor, vis_folder, path, current_time, save_result):
     files.sort()
     for image_name in files:
         outputs, img_info = predictor.inference(image_name)
+        save_scores(outputs)
         result_image = predictor.visual(outputs[0], img_info, predictor.confthre)
         if save_result:
             save_folder = os.path.join(
