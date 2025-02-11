@@ -15,7 +15,7 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Clone the YOLOX repository
-COPY YOLOX/ /workspace/YOLOX
+COPY . /workspace/YOLOX
 
 # Set the working directory to the YOLOX directory
 WORKDIR /workspace/YOLOX
