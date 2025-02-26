@@ -12,11 +12,11 @@ RESULT_DIR = "./YOLOX_outputs/yolox_x/"
 # YOLOX command template (using CPU)
 YOLOX_COMMAND = [
     "python", "tools/demo.py", "image",
-    "-n", "yolox-s",
-    "-c", "/workspace/YOLOX/yolox_s.pth",
+    "-n", "yolox_l",
+    "-c", "/workspace/YOLOX/yolox_l.pth",
     "--conf", "0.25",
     "--nms", "0.25",
-    "--tsize", "1280",
+    "--tsize", "640",
     "--save_result",
     "--device", "cpu"  # Use CPU instead of GPU
 ]
@@ -34,7 +34,7 @@ class NewFileHandler(FileSystemEventHandler):
 
         # Process the file with YOLOX
         try:
-            yolox_command = YOLOX_COMMAND + ["--path", file_path]
+            yolox_command = YOLOX_COMMAND + ["--path", file_path] + ["-expn", file_path[8:13]]
             print(f"Running YOLOX command: {' '.join(yolox_command)}")
             subprocess.run(yolox_command, check=True)
         except subprocess.CalledProcessError as e:
@@ -48,18 +48,6 @@ class NewFileHandler(FileSystemEventHandler):
                 print(f"Processed and removed: {file_path}")
             except Exception as e:
                 print(f"Error removing file {file_path}: {e}")
-
-        _move_all_subfolder_files_to_main_folder(Path(RESULT_DIR))
-
-def _move_all_subfolder_files_to_main_folder(folder_path: Path):
-    if not folder_path.is_dir():
-        return
-
-    for subfolder in folder_path.iterdir():
-        if subfolder.is_dir():
-          for file in subfolder.iterdir():
-              file.rename(folder_path / file.name)
-          subfolder.rmdir()
 
 def monitor_directory(directory):
     """Monitor the directory for new files."""

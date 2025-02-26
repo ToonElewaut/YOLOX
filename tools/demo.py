@@ -185,6 +185,9 @@ class Predictor(object):
         return vis_res
 
 def save_scores(outputs):
+    if outputs[0] is None:
+      return
+
     outputs = outputs[0].cpu()
     scores = outputs[:,4] * outputs[:,5]
 
@@ -210,7 +213,7 @@ def save_questdb(classes, scores):
                     at= TimestampNanos.now()
                     )
 
-            sender.flush()  
+            sender.flush()
 
 def image_demo(predictor, vis_folder, path, current_time, save_result):
     if os.path.isdir(path):
@@ -223,11 +226,9 @@ def image_demo(predictor, vis_folder, path, current_time, save_result):
         save_scores(outputs)
         result_image = predictor.visual(outputs[0], img_info, predictor.confthre)
         if save_result:
-            save_folder = os.path.join(
-                vis_folder, time.strftime("%Y_%m_%d_%H_%M_%S", current_time)
-            )
+            save_folder = os.path.join(vis_folder, time.strftime("%Y//%m//%d", current_time))
             os.makedirs(save_folder, exist_ok=True)
-            save_file_name = os.path.join(save_folder, os.path.basename(image_name))
+            save_file_name = os.path.join(save_folder, os.path.basename(time.strftime("%H_%M_%S", current_time) + ".jpg"))
             logger.info("Saving detection result in {}".format(save_file_name))
             cv2.imwrite(save_file_name, result_image)
         ch = cv2.waitKey(0)

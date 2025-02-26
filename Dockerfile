@@ -35,7 +35,7 @@ RUN pip install --no-cache-dir watchdog
 # Copy the file-watching script into the container
 COPY process_new_files.py /workspace/YOLOX/process_new_files.py
 
-COPY yolox_s.pth /workspace/YOLOX/
+COPY yolox_l.pth /workspace/YOLOX/
 
 # Set the default command to run the file-watching script
 CMD ["python", "process_new_files.py"]
